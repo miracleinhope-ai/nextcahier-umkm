@@ -752,76 +752,138 @@ export default function Inventory({ menus, setMenus, inventory, setInventory, cu
 
           {/* Add / Edit Menu Modal */}
           {showMenuModal && (
-            <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-2xl shadow-2xl glow-card w-full max-w-sm p-6 max-h-[90vh] overflow-y-auto">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-gray-800">{editMenuId ? 'Edit Menu' : 'Tambah Menu Baru'}</h3>
-                  <button onClick={() => setShowMenuModal(false)} className="text-gray-400 hover:text-gray-600"><X size={18}/></button>
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+              <div className="rounded-2xl w-full max-w-sm overflow-hidden max-h-[90vh] flex flex-col"
+                style={{ boxShadow: '0 0 50px rgba(139,92,246,0.4), 0 25px 60px rgba(0,0,0,0.25)' }}>
+
+                {/* ══ HEADER — neon purple ══ */}
+                <div className="px-6 py-4 flex items-center justify-between flex-shrink-0"
+                  style={{
+                    background: 'linear-gradient(135deg, #6d28d9 0%, #8b5cf6 55%, #a78bfa 100%)',
+                    boxShadow: '0 4px 24px rgba(109,40,217,0.55), inset 0 1px 0 rgba(255,255,255,0.18)'
+                  }}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+                      style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(8px)' }}>
+                      {editMenuId ? <Pencil size={16} className="text-white"/> : <Plus size={16} className="text-white"/>}
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-white leading-tight tracking-wide">
+                        {editMenuId ? 'Edit Menu' : 'Tambah Menu Baru'}
+                      </h3>
+                      <p className="text-xs leading-tight" style={{ color: 'rgba(221,214,254,0.85)' }}>
+                        {editMenuId ? 'Ubah data & foto menu' : 'Lengkapi detail menu baru'}
+                      </p>
+                    </div>
+                  </div>
+                  <button onClick={() => setShowMenuModal(false)}
+                    className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+                    style={{ background: 'rgba(255,255,255,0.18)' }}
+                    onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.30)'}
+                    onMouseLeave={e => e.currentTarget.style.background='rgba(255,255,255,0.18)'}>
+                    <X size={15} className="text-white"/>
+                  </button>
                 </div>
 
-                {/* Image Upload Area */}
-                <div className="mb-4">
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 block">Foto Menu</label>
-                  <div
-                    onClick={() => imgInputRef.current?.click()}
-                    className="relative w-full h-36 rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all overflow-hidden">
-                    {menuImgPreview
-                      ? <img src={menuImgPreview} alt="preview" className="absolute inset-0 w-full h-full object-cover rounded-2xl"/>
-                      : <>
-                          <ImagePlus size={24} className="text-gray-300 mb-1"/>
-                          <span className="text-xs text-gray-400">Klik untuk pilih gambar</span>
-                          <span className="text-xs text-gray-300 mt-0.5">JPG, PNG, WebP · maks 2 MB</span>
-                        </>
-                    }
+                {/* ══ BODY — biru muda ══ */}
+                <div className="px-6 py-5 overflow-y-auto flex-1"
+                  style={{ background: 'linear-gradient(160deg, #eff6ff 0%, #dbeafe 45%, #e0f2fe 100%)' }}>
+
+                  {/* Image Upload */}
+                  <div className="mb-4">
+                    <label className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-2 block">📷 Foto Menu</label>
+                    <div
+                      onClick={() => imgInputRef.current?.click()}
+                      className="relative w-full h-36 rounded-2xl border-2 border-dashed border-blue-300 flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden"
+                      style={{ background: 'rgba(255,255,255,0.65)' }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor='#a78bfa'; e.currentTarget.style.background='rgba(245,243,255,0.85)' }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor='#93c5fd'; e.currentTarget.style.background='rgba(255,255,255,0.65)' }}>
+                      {menuImgPreview
+                        ? <img src={menuImgPreview} alt="preview" className="absolute inset-0 w-full h-full object-cover rounded-2xl"/>
+                        : <>
+                            <div className="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center mb-2">
+                              <ImagePlus size={22} className="text-blue-400"/>
+                            </div>
+                            <span className="text-xs font-semibold text-blue-500">Klik untuk pilih gambar</span>
+                            <span className="text-xs text-blue-300 mt-0.5">JPG · PNG · WebP · maks 2 MB</span>
+                          </>
+                      }
+                      {menuImgPreview && (
+                        <div className="absolute inset-0 bg-black/0 hover:bg-black/25 transition-all flex items-center justify-center">
+                          <Camera size={22} className="text-white opacity-0 hover:opacity-100 transition-opacity"/>
+                        </div>
+                      )}
+                    </div>
+                    <input ref={imgInputRef} type="file" accept="image/*" className="hidden" onChange={onPickImage}/>
                     {menuImgPreview && (
-                      <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-all flex items-center justify-center">
-                        <Camera size={20} className="text-white opacity-0 hover:opacity-100"/>
+                      <button onClick={() => { setMenuImgFile(null); setMenuImgPreview(null) }}
+                        className="text-xs text-red-400 hover:text-red-600 mt-1.5 flex items-center gap-1 transition-colors">
+                        <X size={11}/> Hapus foto
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Form Fields */}
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-1.5 block">Nama Menu *</label>
+                      <input value={newMenu.name} onChange={e=>setNewMenu(v=>({...v,name:e.target.value}))}
+                        className="w-full border border-blue-200 bg-white/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 placeholder-blue-300"
+                        placeholder="Contoh: Nasi Goreng Spesial"/>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-1.5 block">Harga Jual *</label>
+                      <input type="number" value={newMenu.price} onChange={e=>setNewMenu(v=>({...v,price:e.target.value}))}
+                        className="w-full border border-blue-200 bg-white/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 placeholder-blue-300"
+                        placeholder="0"/>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-1.5 block">Tipe</label>
+                      <select value={newMenu.type} onChange={e=>setNewMenu(v=>({...v,type:e.target.value}))}
+                        className="w-full border border-blue-200 bg-white/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100">
+                        <option value="inventory">Inventory (ada stok)</option>
+                        <option value="non-inventory">Non-Inventory (tanpa stok)</option>
+                      </select>
+                    </div>
+                    {newMenu.type==='inventory' && !editMenuId && (
+                      <div>
+                        <label className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-1.5 block">Stok Awal</label>
+                        <input type="number" value={newMenu.stock} onChange={e=>setNewMenu(v=>({...v,stock:e.target.value}))}
+                          className="w-full border border-blue-200 bg-white/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 placeholder-blue-300"
+                          placeholder="0"/>
                       </div>
                     )}
                   </div>
-                  <input ref={imgInputRef} type="file" accept="image/*" className="hidden" onChange={onPickImage}/>
-                  {menuImgPreview && (
-                    <button onClick={() => { setMenuImgFile(null); setMenuImgPreview(null) }}
-                      className="text-xs text-red-400 hover:text-red-600 mt-1 flex items-center gap-1">
-                      <X size={11}/> Hapus foto
-                    </button>
-                  )}
                 </div>
 
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Nama Menu *</label>
-                    <input value={newMenu.name} onChange={e=>setNewMenu(v=>({...v,name:e.target.value}))}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" placeholder="Nama menu"/>
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Harga Jual *</label>
-                    <input type="number" value={newMenu.price} onChange={e=>setNewMenu(v=>({...v,price:e.target.value}))}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" placeholder="0"/>
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Tipe</label>
-                    <select value={newMenu.type} onChange={e=>setNewMenu(v=>({...v,type:e.target.value}))}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-400">
-                      <option value="inventory">Inventory (ada stok)</option>
-                      <option value="non-inventory">Non-Inventory (tanpa stok)</option>
-                    </select>
-                  </div>
-                  {newMenu.type==='inventory' && !editMenuId && (
-                    <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Stok Awal</label>
-                      <input type="number" value={newMenu.stock} onChange={e=>setNewMenu(v=>({...v,stock:e.target.value}))}
-                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" placeholder="0"/>
-                    </div>
-                  )}
-                </div>
-                <div className="flex gap-2 mt-5">
-                  <button onClick={() => setShowMenuModal(false)} className="flex-1 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">Batal</button>
+                {/* ══ FOOTER — ungu muda ══ */}
+                <div className="px-6 py-4 flex gap-3 flex-shrink-0"
+                  style={{
+                    background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #e9d5ff 100%)',
+                    borderTop: '1.5px solid rgba(167,139,250,0.35)'
+                  }}>
+                  <button onClick={() => setShowMenuModal(false)}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                    style={{ border: '1.5px solid #c4b5fd', color: '#7c3aed', background: 'rgba(255,255,255,0.7)' }}
+                    onMouseEnter={e => e.currentTarget.style.background='rgba(237,233,254,0.9)'}
+                    onMouseLeave={e => e.currentTarget.style.background='rgba(255,255,255,0.7)'}>
+                    Batal
+                  </button>
                   <button onClick={saveMenu} disabled={mLoading||!newMenu.name||!newMenu.price}
-                    className="flex-1 py-2 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 glow-blue disabled:opacity-40">
-                    {mLoading ? 'Menyimpan...' : editMenuId ? 'Simpan Perubahan' : 'Tambah Menu'}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40"
+                    style={{
+                      background: 'linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)',
+                      boxShadow: (mLoading||!newMenu.name||!newMenu.price) ? 'none' : '0 0 18px rgba(139,92,246,0.5)'
+                    }}>
+                    {mLoading
+                      ? <span className="flex items-center justify-center gap-2">
+                          <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"/>
+                          Menyimpan...
+                        </span>
+                      : editMenuId ? '💾 Simpan Perubahan' : '＋ Tambah Menu'}
                   </button>
                 </div>
+
               </div>
             </div>
           )}
