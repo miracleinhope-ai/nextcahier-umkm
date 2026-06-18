@@ -218,36 +218,51 @@ export default function Inventory({ menus, setMenus, inventory, setInventory, cu
   async function saveMenu() {
     if (!newMenu.name || !newMenu.price) return
     setMLoad(true)
-    let image_url = editMenuId ? (menus.find(m=>m.id===editMenuId)?.image_url || null) : null
 
     try {
-      // Upload gambar jika ada file baru
-      if (menuImgFile) {
-        const tmpId = editMenuId || ('tmp-'+Date.now())
-        try { image_url = await uploadMenuImage(menuImgFile, tmpId) } catch {}
-      }
-
       if (editMenuId) {
-        // UPDATE
+        // ── UPDATE ──────────────────────────────────────────
+        // Pertahankan image_url lama, ganti hanya jika ada file baru
+        let image_url = menus.find(m => m.id === editMenuId)?.image_url || null
+
+        if (menuImgFile) {
+          try { image_url = await uploadMenuImage(menuImgFile, editMenuId) } catch(e) {
+            console.warn('Upload gambar gagal:', e.message)
+          }
+        }
+
         const { data: m, error } = await supabase.from('menus')
           .update({ name: newMenu.name, price: parseFloat(newMenu.price), type: newMenu.type, image_url })
           .eq('id', editMenuId).select().single()
         if (error) throw error
-        setMenus(prev => prev.map(x => x.id === editMenuId ? m : x))
+        setMenus(prev => prev.map(x => x.id === editMenuId ? { ...x, ...m } : x))
+
       } else {
-        // INSERT
-        const menuData = { name: newMenu.name, price: parseFloat(newMenu.price), type: newMenu.type, image_url, is_active: true, created_by: currentUser?.id||null }
+        // ── INSERT ──────────────────────────────────────────
+        // Langkah 1: insert menu dulu TANPA image_url untuk dapat UUID asli
+        const menuData = {
+          name: newMenu.name, price: parseFloat(newMenu.price),
+          type: newMenu.type, image_url: null,
+          is_active: true, created_by: currentUser?.id || null
+        }
         const { data: m, error } = await supabase.from('menus').insert(menuData).select().single()
         if (error) throw error
-        // Re-upload dengan ID yang benar
-        if (menuImgFile && m.id !== ('tmp-'+Date.now())) {
+
+        // Langkah 2: upload gambar pakai UUID asli (bukan tmp ID)
+        let image_url = null
+        if (menuImgFile) {
           try {
             image_url = await uploadMenuImage(menuImgFile, m.id)
             await supabase.from('menus').update({ image_url }).eq('id', m.id)
             m.image_url = image_url
-          } catch {}
+          } catch(e) {
+            console.warn('Upload gambar gagal:', e.message)
+          }
         }
+
         setMenus(prev => [...prev, m])
+
+        // Langkah 3: buat record inventory jika tipe inventory
         if (newMenu.type === 'inventory') {
           const stockInit = parseInt(newMenu.stock) || 0
           const { data: inv } = await supabase.from('inventory')
@@ -258,8 +273,10 @@ export default function Inventory({ menus, setMenus, inventory, setInventory, cu
             await supabase.from('inventory_movements').insert({ menu_id: m.id, type:'in', qty: stockInit, ref_type:'adjustment', notes:'Stok awal', movement_date: new Date().toISOString().slice(0,10), created_by: currentUser?.id||null })
         }
       }
-    } catch {
+    } catch(err) {
+      console.error('saveMenu error:', err.message)
       if (!editMenuId) {
+        // Fallback lokal jika Supabase gagal total
         const fakeId = 'local-'+Date.now()
         setMenus(prev => [...prev, { id: fakeId, name: newMenu.name, price: parseFloat(newMenu.price), type: newMenu.type, image_url: menuImgPreview, is_active: true }])
         if (newMenu.type==='inventory') {
@@ -785,12 +802,10 @@ export default function Inventory({ menus, setMenus, inventory, setInventory, cu
                   <div>
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Tipe</label>
                     <select value={newMenu.type} onChange={e=>setNewMenu(v=>({...v,type:e.target.value}))}
-                      disabled={!!editMenuId}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-400 disabled:bg-gray-50 disabled:text-gray-400">
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-400">
                       <option value="inventory">Inventory (ada stok)</option>
                       <option value="non-inventory">Non-Inventory (tanpa stok)</option>
                     </select>
-                    {editMenuId && <p className="text-xs text-gray-400 mt-1">Tipe tidak dapat diubah setelah menu dibuat.</p>}
                   </div>
                   {newMenu.type==='inventory' && !editMenuId && (
                     <div>
